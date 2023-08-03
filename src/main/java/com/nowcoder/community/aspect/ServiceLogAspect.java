@@ -28,6 +28,8 @@ public class ServiceLogAspect {
     @Before("pointcut()")
     public void before(JoinPoint joinPoint){
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        // consumer没有调用controller因此attributes有可能是空的
+        if(attributes == null) return;
         HttpServletRequest request = attributes.getRequest();
         String ip = request.getRemoteHost();
         String now = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());

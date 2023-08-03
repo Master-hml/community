@@ -1,8 +1,7 @@
 package com.nowcoder.community.controller;
 
 import com.nowcoder.community.service.AlphaService;
-import com.nowcoder.community.util.CommnunityUtil;
-import javafx.beans.binding.ObjectExpression;
+import com.nowcoder.community.util.CommunityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -146,7 +145,7 @@ public class AlphaController {
     @ResponseBody
     public String setCookie(HttpServletResponse response){
         // 创建cookie
-        Cookie cookie = new Cookie("code", CommnunityUtil.generateUUID());
+        Cookie cookie = new Cookie("code", CommunityUtil.generateUUID());
         // 设置生效范围
         cookie.setPath("/community/alpha");
         // 设置生存时间
@@ -187,7 +186,7 @@ public class AlphaController {
     public String testAjax(String name, int age){
         System.out.println(name);
         System.out.println(age);
-        return CommnunityUtil.getJSONString(0, "操作成功！");
+        return CommunityUtil.getJSONString(0, "操作成功！");
     }
 
 }

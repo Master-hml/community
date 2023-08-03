@@ -1,15 +1,14 @@
 package com.nowcoder.community.controller;
 
-import com.mysql.cj.log.Log;
 import com.nowcoder.community.annotation.LoginRequired;
+import com.nowcoder.community.entity.Comment;
+import com.nowcoder.community.entity.DiscussPost;
+import com.nowcoder.community.entity.Page;
 import com.nowcoder.community.entity.User;
-import com.nowcoder.community.service.FollowService;
-import com.nowcoder.community.service.LikeService;
-import com.nowcoder.community.service.UserService;
-import com.nowcoder.community.util.CommnunityUtil;
+import com.nowcoder.community.service.*;
+import com.nowcoder.community.util.CommunityUtil;
 import com.nowcoder.community.util.CommunityConstant;
 import com.nowcoder.community.util.HostHolder;
-import com.sun.org.apache.xpath.internal.operations.Mod;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,14 +21,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.jws.WebParam;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -52,6 +51,10 @@ public class UserController implements CommunityConstant {
     private LikeService likeService;
     @Autowired
     private FollowService followService;
+    @Autowired
+    private DiscussPostService discussPostService;
+    @Autowired
+    private CommentService commentService;
 
     @LoginRequired
     @RequestMapping(path = "/settings", method = RequestMethod.GET)
@@ -76,7 +79,7 @@ public class UserController implements CommunityConstant {
         }
 
         // 生成的随机文件名
-        filename = CommnunityUtil.generateUUID() + suffix;
+        filename = CommunityUtil.generateUUID() + suffix;
         // 确定文件存放的路径
         File dest = new File(uploadPath + "/" + filename);
         try {
@@ -159,11 +162,73 @@ public class UserController implements CommunityConstant {
 
     // 我的帖子
     @RequestMapping(path = "/myPost/{userId}", method = RequestMethod.GET)
-    public String getMyPostPage(@PathVariable("userId") int userId, Model model){
+    public String getMyPostPage(@PathVariable("userId") int userId, Page page, Model model){
         User user = userService.findUserById(userId);
         if (user == null) throw new RuntimeException("该用户不存在！");
-        // 帖子数
 
+        page.setLimit(5);
+        page.setPath("/user/myPost/" + userId);
+        page.setRows(discussPostService.findDiscussPostRows(userId));
+
+        // 帖子数
+        int postCount = discussPostService.findDiscussPostRows(userId);
+        model.addAttribute("postCount", postCount);
+
+        // 帖子详情
+        List<DiscussPost> discussPosts =
+                discussPostService.findDiscussPosts(userId, page.getOffset(), page.getLimit());
+
+        // 帖子点赞数
+        List<Map<String, Object>> postList = new ArrayList<>();
+        for(DiscussPost discussPost : discussPosts){
+            int likecount = (int) likeService.findEntityLikeCount(ENTITY_TYPE_POST, userId);
+            Map<String, Object> map = new HashMap<>();
+            map.put("likeCount", likecount);
+            map.put("discussPost", discussPost);
+            postList.add(map);
+        }
+        model.addAttribute("postList", postList);
+
+        return "/site/my-post";
+    }
+
+    // 我的评论
+    @RequestMapping(path = "/myReply/{userId}", method = RequestMethod.GET)
+    public String getMyReplyPage(@PathVariable("userId") int userId, Page page, Model model){
+        User user = userService.findUserById(userId);
+        if (user == null) throw new RuntimeException("该用户不存在！");
+
+        // 回复数量
+        int replyCount = commentService.findCommentCountByUser(ENTITY_TYPE_COMMENT, userId);
+        model.addAttribute("replyCount", replyCount);
+
+        page.setLimit(5);
+        page.setPath("/user/myReply/" + userId);
+        page.setRows(replyCount);
+
+        // 回复列表
+        List<Comment> replys = commentService.findCommentsByUser(userId, page.getOffset(), page.getLimit());
+
+        List<Map<String, Object>> replyList = new ArrayList<>();
+        if(replys != null && !replys.isEmpty()){
+            for(Comment reply : replys){
+                Map<String, Object> map = new HashMap<>();
+                map.put("reply", reply);
+                if (reply.getEntityType() == ENTITY_TYPE_COMMENT){
+                    reply = commentService.findCommentById(reply.getEntityId());
+
+                }
+                DiscussPost discussPost = discussPostService.findDiscussPostById(reply.getEntityId());
+                String title = discussPost.getTitle();
+                map.put("title", title);
+                map.put("discussPostId", discussPost.getId());
+                replyList.add(map);
+            }
+        }
+
+        model.addAttribute("replyList", replyList);
+
+        return "/site/my-reply";
     }
 
 

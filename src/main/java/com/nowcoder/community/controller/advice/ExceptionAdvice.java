@@ -1,6 +1,6 @@
 package com.nowcoder.community.controller.advice;
 
-import com.nowcoder.community.util.CommnunityUtil;
+import com.nowcoder.community.util.CommunityUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -30,7 +30,7 @@ public class ExceptionAdvice {
         if("XMLHttpRequest".equals(xRequestedWith)){
             response.setContentType("application/plain;charset=utf-8");
             PrintWriter writer = response.getWriter();
-            writer.write(CommnunityUtil.getJSONString(1, "服务器异常！"));
+            writer.write(CommunityUtil.getJSONString(1, "服务器异常！"));
         } else {
             response.sendRedirect(request.getContextPath() + "/error");
         }

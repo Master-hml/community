@@ -8,7 +8,7 @@ import com.nowcoder.community.service.CommentService;
 import com.nowcoder.community.service.DiscussPostService;
 import com.nowcoder.community.service.LikeService;
 import com.nowcoder.community.service.UserService;
-import com.nowcoder.community.util.CommnunityUtil;
+import com.nowcoder.community.util.CommunityUtil;
 import com.nowcoder.community.util.CommunityConstant;
 import com.nowcoder.community.util.HostHolder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +45,7 @@ public class DiscussPostController implements CommunityConstant {
     public String addDiscussPost(String title, String content){
         User user = hostHolder.getUser();
         if(user == null){
-            return CommnunityUtil.getJSONString(403, "你还没有登陆哦！");
+            return CommunityUtil.getJSONString(403, "你还没有登陆哦！");
         }
 
         DiscussPost post = new DiscussPost();
@@ -56,7 +56,7 @@ public class DiscussPostController implements CommunityConstant {
         discussPostService.addDiscussPost(post);
 
         // 报错情况将来统一处理
-        return CommnunityUtil.getJSONString(0, "发布成功！");
+        return CommunityUtil.getJSONString(0, "发布成功！");
     }
 
     @RequestMapping(path = "/detail/{discussPostId}", method = RequestMethod.GET)

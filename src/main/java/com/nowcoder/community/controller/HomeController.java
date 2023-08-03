@@ -64,6 +64,4 @@ public class HomeController implements CommunityConstant {
         return "/error/500";
     }
 
-
-
 }

@@ -2,7 +2,6 @@ package com.nowcoder.community.service;
 
 import com.nowcoder.community.dao.CommentMapper;
 import com.nowcoder.community.entity.Comment;
-import com.nowcoder.community.util.CommnunityUtil;
 import com.nowcoder.community.util.CommunityConstant;
 import com.nowcoder.community.util.SensitiveFilter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +29,20 @@ public class CommentService implements CommunityConstant {
         return commentMapper.selectCommentsByEntity(entityType, entityId, offset, limit);
     }
 
+    public List<Comment> findCommentsByUser(int userId, int offset, int limit){
+        return commentMapper.selectCommentsByUser(userId, offset, limit);
+    }
+
+    public Comment findCommentById(int id){
+        return commentMapper.selectCommentById(id);
+    }
+
     public int findCommentCount(int entityType, int entityId){
         return commentMapper.selectCountsByEntity(entityType, entityId);
+    }
+
+    public int findCommentCountByUser(int entityType, int userId){
+        return commentMapper.selectCountsByUser(entityType, userId);
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRED)
